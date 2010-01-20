@@ -27,7 +27,7 @@ Bottom line, this gem works.  Fast.
 
 I couldn't find any that worked worth a crap.  The {ruby-aes}[http://rubyforge.org/projects/ruby-aes/]
 project has Ruby 1.9 bugs that have been open over _two_ _years_ now, {crypt/rijndael}[http://crypt.rubyforge.org/rijndael.html]
-doesn't work on Ruby 1.9 and is *SLOOOOOOW* (as it's written in Ruby), and some people even report getting
+doesn't work on Ruby 1.9 and is slooow (as it's written in Ruby), and some people even report getting
 {inconsistent encryption results from other libraries}[http://blade.nagaokaut.ac.jp/cgi-bin/scat.rb/ruby/ruby-talk/228214].
 
 So I grabbed some C reference code, wrapped a Ruby interface around it, and voíla.
@@ -70,7 +70,7 @@ maybe job servers, or an admin port, or whatever.  Maybe even a simple chat serv
 
 You can use SSL for this if you want it to be time-consuming to setup, painful to maintain, and
 slow. Or you can use a different algorithm, such as AES.  Setting up an SSH tunnel is another good
-alternative (although AES is faster, and setup is slightly easier).
+alternative, if you control both systems (Windows maintenance it a bit of a pain).
 
 === AES vs Other Encryption Standards
 
