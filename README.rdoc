@@ -2,8 +2,15 @@
 
 This is a lightweight, fast implementation of AES (the US government's Advanced Encryption Standard)
 written in C for speed.  You can read more on the {Wikipedia AES Page}[http://en.wikipedia.org/wiki/Advanced_Encryption_Standard].
+The algorithm itself was extracted from the open source Netcat clone {sbd}[http://www.cycom.se/dl/sbd]
+(AES support by Christophe Devine).
 
-This library supports a subset of AES functionality, specifically 129, 192, and 256-bit ciphers only.
+This library supports a subset of AES functionality, specifically:
+
+* 128, 192, and 256-bit ciphers only
+* Cipher Block Chaining (CBC) mode only
+
+You can read specifics about AES-CBC in the IPSec-related {RFC3602}[http://www.rfc-archive.org/getrfc.php?rfc=3602]
 
 == Installation
 
