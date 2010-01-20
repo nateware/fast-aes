@@ -68,15 +68,19 @@ In that case, if you need security, SSL is the obvious choice (and the right one
 But there will probably come a time, padawan, when you need a couple backend servers to talk -
 maybe job servers, or an admin port, or whatever.  Maybe even a simple chat server.
 
-You can use SSL for this if you want it to be time-consuming to setup, painful to maintain, and
-slow. Or you can use a different algorithm, such as AES.  Setting up an SSH tunnel is another good
-alternative, if you control both systems (Windows maintenance it a bit of a pain).
+You can setup SSL certificates for this if you want it to be time-consuming to maintain.
+Or you can directly use an encryption algorithm, such as AES.  Setting up an SSH tunnel is another
+good alternative, if you control both systems.  I think it's easier to configure encryption keys
+as part of your application, rather than having to mess with each individual system, but that's me.
+
+For more information on how SSL/AES/RC4/TLS all interact,
+{read this article on SSL and AES}[http://luxsci.com/blog/256-bit-aes-encryption-for-ssl-and-tls-maximal-security.html]
 
 === AES vs Other Encryption Standards
 
 There are a bizillion (literally!) different encryption standards out there.  If you have
 a PhD, and can't find a job, writing an encryption algorithm is a good thing to put on your resume -
-on that outside chance that someone will hire you and use it.  If you don't possess the talent to
+on the outside chance that someone will hire you and use it.  If you don't possess the talent to
 write an encryption standard, you can spend hours trying to crack one - for similar reasons.  As a
 result, of the many encryption alternatives, most are either (a) cracked or (b) covered by patents.
 
