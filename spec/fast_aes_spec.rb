@@ -21,7 +21,7 @@ describe 'FastAES' do
       aes.key.should == key
     end
   end
-  
+
   it "should encrypt and decrypt messages (what a concept)" do
     phrases = [
       'Hey there, how are you?',
