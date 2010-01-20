@@ -2,7 +2,7 @@
 require 'mkmf'
 
 # Give it a name
-extension_name = 'fast_aes'
+extension_name = 'fast-aes'
 
 # The destination
 dir_config(extension_name)

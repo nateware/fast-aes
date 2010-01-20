@@ -28,11 +28,11 @@ typedef struct {
 
     /* Encryption Round Keys */
     unsigned int erk[64];
-	unsigned int initial_erk[64];
+	  unsigned int initial_erk[64];
 
     /* Decryption Round Keys */
     unsigned int drk[64];
-	unsigned int initial_drk[64];
+	  unsigned int initial_drk[64];
 
     /* Number of rounds. */
     int nr;
@@ -52,17 +52,9 @@ void fast_aes_free(fast_aes_t* fast_aes_config);
 void fast_aes_module_shutdown(fast_aes_t* fast_aes_config);    
 
 /* and actual, bonafide encryption */
-VALUE fast_aes_encrypt(
-    VALUE self,
-    VALUE DataIn,
-    VALUE BytesIn
-);
+VALUE fast_aes_encrypt(VALUE self, VALUE buffer);
 
-VALUE fast_aes_decrypt(
-    VALUE self,
-    VALUE DataIn,
-    VALUE BytesIn
-);
+VALUE fast_aes_decrypt(VALUE self, VALUE buffer);
 
 void fast_aes_encrypt_block(fast_aes_t* fast_aes, unsigned char input[16], unsigned char output[16]);
 void fast_aes_decrypt_block(fast_aes_t* fast_aes, unsigned char input[16], unsigned char output[16]);

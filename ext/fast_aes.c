@@ -18,6 +18,12 @@
 /* Global boolean */
 int fast_aes_do_gen_tables = 1;
 
+/* Old school.  Oh yeah */
+#ifndef RSTRING_PTR
+  #define RSTRING_PTR(s) (RSTRING(s)->ptr)
+  #define RSTRING_LEN(s) (RSTRING(s)->len)
+#endif
+
 /* Ruby buckets */
 VALUE rb_cFastAES;
 
@@ -27,41 +33,41 @@ void Init_fast_aes()
 
     rb_define_alloc_func(rb_cFastAES, fast_aes_alloc);
     rb_define_method(rb_cFastAES, "initialize", fast_aes_initialize, 1);
-    rb_define_method(rb_cFastAES, "encrypt", fast_aes_encrypt, 2);
-    rb_define_method(rb_cFastAES, "decrypt", fast_aes_decrypt, 2);
+    rb_define_method(rb_cFastAES, "encrypt", fast_aes_encrypt, 1);
+    rb_define_method(rb_cFastAES, "decrypt", fast_aes_decrypt, 1);
     rb_define_method(rb_cFastAES, "key", fast_aes_key, 0);
 }
 
 VALUE fast_aes_key(VALUE self)
 {
-	  /* get our "self" data structure (eg, member vars) */
+      /* get our "self" data structure (eg, member vars) */
     fast_aes_t* fast_aes;
-	  Data_Get_Struct(self, fast_aes_t, fast_aes);
+      Data_Get_Struct(self, fast_aes_t, fast_aes);
     VALUE new_str = rb_str_new(fast_aes->key, fast_aes->key_bits/8);
     return new_str;
 }
 
 VALUE fast_aes_alloc(VALUE klass) 
 {
-	/* Initialize our structs */
-	fast_aes_t *fast_aes = malloc(sizeof(fast_aes_t));
+    /* Initialize our structs */
+    fast_aes_t *fast_aes = malloc(sizeof(fast_aes_t));
 
-	/* Clear out memory */
-	memset(fast_aes->key, 0, sizeof(fast_aes->key));
-	memset(fast_aes->erk, 0, sizeof(fast_aes->erk));
-	memset(fast_aes->drk, 0, sizeof(fast_aes->drk));
+    /* Clear out memory */
+    memset(fast_aes->key, 0, sizeof(fast_aes->key));
+    memset(fast_aes->erk, 0, sizeof(fast_aes->erk));
+    memset(fast_aes->drk, 0, sizeof(fast_aes->drk));
     memset(fast_aes->initial_erk, 0, sizeof(fast_aes->initial_erk));
-	memset(fast_aes->initial_drk, 0, sizeof(fast_aes->initial_drk));
+    memset(fast_aes->initial_drk, 0, sizeof(fast_aes->initial_drk));
 
-	return Data_Wrap_Struct(klass, fast_aes_mark, fast_aes_free, fast_aes);
+    return Data_Wrap_Struct(klass, fast_aes_mark, fast_aes_free, fast_aes);
 }
 
 VALUE fast_aes_initialize(VALUE self, VALUE key)
 {
-	  /* get our "self" data structure (eg, member vars) */
+      /* get our "self" data structure (eg, member vars) */
     fast_aes_t* fast_aes;
-	  Data_Get_Struct(self, fast_aes_t, fast_aes);
-		char error_mesg[350];
+      Data_Get_Struct(self, fast_aes_t, fast_aes);
+        char error_mesg[350];
 
     int key_bits;
     char* key_data = StringValuePtr(key);
@@ -90,15 +96,15 @@ VALUE fast_aes_initialize(VALUE self, VALUE key)
             /*printf("AES key=%s, bits=%d\n", fast_aes->key, fast_aes->key_bits);*/
             break;
         default:
-						sprintf(error_mesg, "AES key must be 128, 192, or 256 bits in length (got %d): %s", key_bits, key_data);
+                        sprintf(error_mesg, "AES key must be 128, 192, or 256 bits in length (got %d): %s", key_bits, key_data);
             rb_raise(rb_eArgError, error_mesg);
             return Qnil;
     }
 
-	if (fast_aes_initialize_state(fast_aes)) {
+    if (fast_aes_initialize_state(fast_aes)) {
         rb_raise(rb_eRuntimeError, "Failed to initialize AES internal state");
         return Qnil;    
-	}
+    }
     return Qtrue;
 }
 
@@ -108,30 +114,29 @@ void fast_aes_module_shutdown( fast_aes_t* fast_aes )
 
 void fast_aes_mark( fast_aes_t* fast_aes ) 
 {
-	//rb_gc_mark(??);
-	//should we mark each member here?
+    //rb_gc_mark(??);
+    //should we mark each member here?
 }
 
 void fast_aes_free( fast_aes_t* fast_aes ) 
 {
-	fast_aes_module_shutdown(fast_aes);
-	free(fast_aes);
+    fast_aes_module_shutdown(fast_aes);
+    free(fast_aes);
 }
 
 VALUE fast_aes_encrypt(
     VALUE self,
-    VALUE DataIn,
-    VALUE BytesIn
+    VALUE buffer
 )
 {
-	   /* get our "self" data structure (eg, member vars) */
+    /* get our "self" data structure (eg, member vars) */
     fast_aes_t* fast_aes;
-	  Data_Get_Struct(self, fast_aes_t, fast_aes);
+    Data_Get_Struct(self, fast_aes_t, fast_aes);
     
-    char* pDataIn = StringValuePtr(DataIn);
-    int uiNumBytesIn = NUM2INT(BytesIn);
+    char* pDataIn = StringValuePtr(buffer);
+    int uiNumBytesIn = RSTRING_LEN(buffer);
     char* pDataOut = malloc((uiNumBytesIn + 15) & -16);  /* auto-malloc min size in 16-byte increments */
-  // printf("input='%s' (length=%d)\n", pDataIn, uiNumBytesIn);
+    // printf("input='%s' (length=%d)\n", pDataIn, uiNumBytesIn);
 
     /*size_t* puiNumBytesOut*/
     unsigned char *pRead, *pWrite;
@@ -147,10 +152,10 @@ VALUE fast_aes_encrypt(
     /* set the state back to the start to allow for correct encryption
      * everytime we are passed data to encrypt
      */
-	if (fast_aes_reinitialize_state(fast_aes)) {
+    if (fast_aes_reinitialize_state(fast_aes)) {
         rb_raise(rb_eRuntimeError, "Failed to reinitialize AES internal state");
         return Qnil;    
-	}
+    }
 
     //printf( "using key %s to AES %d bits\n", (char*)m_key, strlen((char*)m_key)*8 );
 
@@ -163,7 +168,7 @@ VALUE fast_aes_encrypt(
         fast_aes_encrypt_block(fast_aes, pRead, pWrite);
         pRead += 16; pWrite += 16;
         uiNumBytesIn -= 16;
-		puiNumBytesOut += 16;
+        puiNumBytesOut += 16;
     }
 
     /*//////////////////////////////////////////////////////////////////////////
@@ -179,7 +184,7 @@ VALUE fast_aes_encrypt(
         // printf("temp='%s'; pWrite='%s'\n", temp, pWrite);
         fast_aes_encrypt_block(fast_aes, temp, pWrite);
         // printf("temp='%s'; pWrite='%s'\n", temp, pWrite);
-		puiNumBytesOut += 16;
+        puiNumBytesOut += 16;
     }
     
     /* return the encrypted string */
@@ -190,16 +195,15 @@ VALUE fast_aes_encrypt(
 
 VALUE fast_aes_decrypt(
     VALUE self,
-    VALUE DataIn,
-    VALUE BytesIn
+    VALUE buffer
 )
 {
-	/* get our "self" data structure (eg, member vars) */
+    /* get our "self" data structure (eg, member vars) */
     fast_aes_t* fast_aes;
-	Data_Get_Struct(self, fast_aes_t, fast_aes);
+    Data_Get_Struct(self, fast_aes_t, fast_aes);
     
-    char* pDataIn = StringValuePtr(DataIn);
-    int uiNumBytesIn = NUM2INT(BytesIn);
+    char* pDataIn = StringValuePtr(buffer);
+    int uiNumBytesIn = RSTRING_LEN(buffer);
     char* pDataOut = malloc((uiNumBytesIn + 15) & -16);  /* auto-malloc min size in 16-byte increments */
     pDataOut = malloc(uiNumBytesIn + 15);
 
@@ -215,10 +219,10 @@ VALUE fast_aes_decrypt(
 
     // set the state back to the start to allow for correct decryption
     // everytime we are passed data to decrypt
-	if (fast_aes_reinitialize_state(fast_aes)) {
+    if (fast_aes_reinitialize_state(fast_aes)) {
         rb_raise(rb_eRuntimeError, "Failed to reinitialize AES internal state");
         return Qnil;    
-	}
+    }
 
     //printf( "using key %s to AES %d bits\n", (char*)m_key, strlen((char*)m_key)*8 );
     ////////////////////////////////////////////////////////////////////////////
@@ -230,7 +234,7 @@ VALUE fast_aes_decrypt(
         fast_aes_decrypt_block(fast_aes, pRead, pWrite);
         pRead += 16; pWrite += 16;
         uiNumBytesIn -= 16;
-		puiNumBytesOut += 16;
+        puiNumBytesOut += 16;
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -243,7 +247,7 @@ VALUE fast_aes_decrypt(
         memset(temp, 0, sizeof(temp));  /* pad with 0's */
         memcpy(temp, pRead, uiNumBytesIn);
         fast_aes_decrypt_block(fast_aes, temp, pWrite);
-		puiNumBytesOut += 16;
+        puiNumBytesOut += 16;
     }
     
     /* return the decrypted string */

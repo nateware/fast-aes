@@ -1,32 +1,69 @@
 = FastAES - Fast AES implementation for Ruby in C
 
-This is a lightweight, fast implementation of AES (the US government's Advanced Encryption Standard)
-written in C for speed.  You can read more on the {Wikipedia AES Page}[http://en.wikipedia.org/wiki/Advanced_Encryption_Standard].
-The algorithm itself was extracted from the open source Netcat clone {sbd}[http://www.cycom.se/dl/sbd]
-(AES support by Christophe Devine).
+This is a lightweight, fast implementation of AES (the US government's Advanced Encryption Standard,
+aka "Rijndael"), written in C for speed.  You can read more on the {Wikipedia AES Page}[http://en.wikipedia.org/wiki/Advanced_Encryption_Standard].
+The algorithm itself was extracted from work by Christophe Devine for the open source Netcat clone
+{sbd}[http://www.cycom.se/dl/sbd]. According to the community, this is
+{one of the best performing AES implementations available}[http://www.derkeiler.com/Newsgroups/sci.crypt/2003-07/0162.html]:
 
-This library supports a subset of AES functionality, specifically:
+    >> With some exceptions your code performs better than all others in 
+    >> enc[ryption]/dec[ryption]. Do you have an explanation of that fact? Thanks. 
+    >
+    > Well, I've tried to make the code as simple and straightforward as 
+    > possible; I also used a few basic tricks, like loop unrolling. 
 
-* 128, 192, and 256-bit ciphers only
+Since this library wraps the Christophe's implementation, it supports a subset of AES, specifically:
+
+* 128, 192, and 256-bit ciphers
 * Cipher Block Chaining (CBC) mode only
+* Data is auto-padded at 16-bit boundaries
 
-You can read specifics about AES-CBC in the IPSec-related {RFC3602}[http://www.rfc-archive.org/getrfc.php?rfc=3602]
+You can read specifics about AES-CBC in the IPSec-related {RFC 3602}[http://www.rfc-archive.org/getrfc.php?rfc=3602]
+
+=== Other Ruby AES gems
+
+I couldn't find any that worked worth a crap.  The {ruby-aes}[http://rubyforge.org/projects/ruby-aes/]
+project has Ruby 1.9 bugs that have been open over _two_ _years_ now, {crypt/rijndael}[http://crypt.rubyforge.org/rijndael.html]
+doesn't work on Ruby 1.9 and is *SLOOOOOOW* (as it's written in Ruby), and some people even report getting
+{different encryption results from different libraries}[http://blade.nagaokaut.ac.jp/cgi-bin/scat.rb/ruby/ruby-talk/228214].
+
+So I grabbed some C reference code, wrapped a Ruby interface around it, and voíla.
+
+C'mon people, it's not that hard.  It's called Google.  In my day, you had to actually *WRITE* the code.
 
 == Installation
 
   gem install gemcutter
   gem install fast-aes
-  
+
 == Example
 
-  require 'fast_aes'  # note underscore
+Simple encryption/decryption:
+
+  require 'fast-aes'
 
   aes = FastAES.new(key)   # can be 128, 192, or 256 bits
-  
+
   text = "Hey there"
 
-  data = aes.encrypt(text, text.length)
-  puts aes.decrypt(data, data.length)   # "Hey there"
+  data = aes.encrypt(text)
+  puts aes.decrypt(data)   # "Hey there"
+
+== Why FastAES
+
+=== SSL vs AES
+
+I'm going to guess you're using Ruby with Rails, which means you're doing 90+% web development.
+If you need security, SSL is the obvious choice.
+
+There will probably come a time, however, when you need a couple backend servers to talk, maybe
+job servers, or an admin interface, or whatever.  Maybe even a simple chat server.
+
+You can use SSL for this if you want it to be time-consuming to setup, painful to maintain, and
+slow. Or you can use an alternative, such as AES.  Setting up an SSH tunnel is another good
+alternative.
+
+There are other alternatives, but many of these are either (a) cracked or (b) covered by patents.
 
 == Special Note
 
@@ -38,7 +75,9 @@ library.
 
 == Author
 
-Copyright (c) 2009 {Nate Wiger}[http://nate.wiger.org].  All Rights Reserved.  Released under the MIT License.
+AES C reference code by Christophe Devine.  Thanks Christophe.
+
+This gem copyright (c) 2010 {Nate Wiger}[http://nate.wiger.org].  Released under the MIT License.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation
 files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use,

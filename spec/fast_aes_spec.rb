@@ -1,8 +1,5 @@
 
-$LOAD_PATH.unshift "#{File.dirname(__FILE__)}"
 $LOAD_PATH.unshift "#{File.dirname(__FILE__)}/../ext/#{RUBY_PLATFORM}"
-
-require 'bit_field'
 
 describe 'FastAES' do
   before :all do
