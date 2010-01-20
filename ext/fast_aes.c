@@ -32,6 +32,16 @@ void Init_fast_aes()
     rb_define_method(rb_cFastAES, "initialize", fast_aes_initialize, 1);
     rb_define_method(rb_cFastAES, "encrypt", fast_aes_encrypt, 2);
     rb_define_method(rb_cFastAES, "decrypt", fast_aes_decrypt, 2);
+    rb_define_method(rb_cFastAES, "key", fast_aes_key, 0);
+}
+
+VALUE fast_aes_key(VALUE self)
+{
+	  /* get our "self" data structure (eg, member vars) */
+    fast_aes_t* fast_aes;
+	  Data_Get_Struct(self, fast_aes_t, fast_aes);
+    VALUE new_str = rb_str_new(fast_aes->key, fast_aes->key_bits/8);
+    return new_str;
 }
 
 VALUE fast_aes_alloc(VALUE klass) 
@@ -51,9 +61,10 @@ VALUE fast_aes_alloc(VALUE klass)
 
 VALUE fast_aes_initialize(VALUE self, VALUE key)
 {
-	/* get our "self" data structure (eg, member vars) */
+	  /* get our "self" data structure (eg, member vars) */
     fast_aes_t* fast_aes;
-	Data_Get_Struct(self, fast_aes_t, fast_aes);
+	  Data_Get_Struct(self, fast_aes_t, fast_aes);
+		char error_mesg[350];
 
     int key_bits;
     char* key_data = StringValuePtr(key);
@@ -86,7 +97,8 @@ VALUE fast_aes_initialize(VALUE self, VALUE key)
             /*printf("AES key=%s, bits=%d\n", fast_aes->key, fast_aes->key_bits);*/
             break;
         default:
-            rb_raise(rb_eArgError, "AES key must be 128, 192, or 256 bits in length");
+						sprintf(error_mesg, "AES key must be 128, 192, or 256 bits in length (got %d): %s", key_bits, key_data);
+            rb_raise(rb_eArgError, error_mesg);
             return Qnil;
     }
 
@@ -119,9 +131,9 @@ VALUE fast_aes_encrypt(
     VALUE BytesIn
 )
 {
-	/* get our "self" data structure (eg, member vars) */
+	   /* get our "self" data structure (eg, member vars) */
     fast_aes_t* fast_aes;
-	Data_Get_Struct(self, fast_aes_t, fast_aes);
+	  Data_Get_Struct(self, fast_aes_t, fast_aes);
     
     char* pDataIn = StringValuePtr(DataIn);
     int uiNumBytesIn = NUM2INT(BytesIn);
@@ -242,7 +254,6 @@ VALUE fast_aes_decrypt(
     }
     
     /* return the decrypted string */
-    /* return the encrypted string */
     VALUE new_str = rb_str_new(pDataOut, puiNumBytesOut);
     free(pDataOut);
     return new_str;

@@ -49,6 +49,7 @@ VALUE fast_aes_alloc(VALUE klass);
 VALUE fast_aes_initialize(VALUE self, VALUE key);
 void fast_aes_gen_tables();
 int  fast_aes_initialize_state(fast_aes_t* fast_aes_config);
+VALUE fast_aes_key(VALUE self);
 
 /* garbage collection */
 void fast_aes_mark(fast_aes_t* fast_aes_config);
