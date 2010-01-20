@@ -6,20 +6,20 @@ The algorithm itself was extracted from work by Christophe Devine for the open s
 {sbd}[http://www.cycom.se/dl/sbd]. According to the community, this is
 {one of the best performing AES implementations available}[http://www.derkeiler.com/Newsgroups/sci.crypt/2003-07/0162.html]:
 
-    >> With some exceptions your code performs better than all others in 
-    >> enc[ryption]/dec[ryption]. Do you have an explanation of that fact? Thanks. 
+    > With some exceptions your code performs better than all others in 
+    > enc[ryption]/dec[ryption]. Do you have an explanation of that fact? Thanks. 
     >
-    > Well, I've tried to make the code as simple and straightforward as 
-    > possible; I also used a few basic tricks, like loop unrolling. 
+    Well, I've tried to make the code as simple and straightforward as 
+    possible; I also used a few basic tricks, like loop unrolling. 
 
-Since this library wraps the Christophe's implementation, it supports a subset of AES, specifically:
+Since this library wraps the sbd implementation, it supports a subset of AES, specifically:
 
 * 128, 192, and 256-bit ciphers
 * Cipher Block Chaining (CBC) mode only
-* Data is auto-padded at 16-bit boundaries
+* Encrypted blocks are padded at 16-bit boundaries ({read more on padding}[http://www.di-mgt.com.au/cryptopad.html#whatispadding]).
 
-You can read specifics about AES-CBC in the IPSec-related {RFC 3602}[http://www.rfc-archive.org/getrfc.php?rfc=3602].
-CBC is a well-tested cipher mode, recommended for {many tasks}[http://www.di-mgt.com.au/cryptopad.html].
+You can read specifics about AES-CBC in the IPSec-related {RFC 3602}[http://www.rfc-archive.org/getrfc.php?rfc=3602],
+if you really care that much.
 
 === Other Ruby AES gems
 
@@ -43,15 +43,18 @@ Simple encryption/decryption:
 
   require 'fast-aes'
 
-  key = '424b3b5c4d454c7a51376748255d7b7156585f543f776243227352746f'
+  # key can be 128, 192, or 256 bits
+  key = '424b3b5c4d454c7a51376748255d7b7156585f543f776243227352746f' 
 
-  aes = FastAES.new(key)   # key can be 128, 192, or 256 bits
+  aes = FastAES.new(key)
 
   text = "Hey there, how are you?"
 
   data = aes.encrypt(text)
 
   puts aes.decrypt(data)   # "Hey there, how are you?"
+
+Pretty simple, jah?
 
 == Why AES?
 
@@ -65,30 +68,30 @@ maybe job servers, or an admin port, or whatever.  Maybe even a simple chat serv
 
 You can use SSL for this if you want it to be time-consuming to setup, painful to maintain, and
 slow. Or you can use a different algorithm, such as AES.  Setting up an SSH tunnel is another good
-alternative (although AES is faster and setup is slightly easier).
+alternative (although AES is faster, and setup is slightly easier).
 
 === AES vs Other Encryption Standards
 
-There are a bizillion (really - literally) different encryption standards out there.  If you have
-a PhD, and can't find a job, writing an encryption algorithm is a good thing to put on your resume,
-in the desperate hopes that someone will hire you and use it.  If you don't possess the talent to
+There are a bizillion (literally (really)) different encryption standards out there.  If you have
+a PhD, and can't find a job, writing an encryption algorithm is a good thing to put on your resume -
+on that outside chance that someone will hire you and use it.  If you don't possess the talent to
 write an encryption standard, you can spend hours trying to crack one - for similar reasons.  As a
-result, of these other encryption alternatives, most are either (a) cracked or (b) covered by patents.
+result, of the other encryption alternatives, most are either (a) cracked or (b) covered by patents.
 
 Personally, when it comes to encryption, I think choosing what the US government chooses is a decent
-choice.
+choice.  They tend to be "security conscious."
 
 === Special Note
 
-As this software deals with encryption/decryption, please note there is *NO* *WARRANTY*, even
-with regards to FITNESS FOR A PARTICULAR PURPOSE.  This means if you use this library,
-and it turns out there's a flaw in the implementation that results in your data being
-hacked, IT'S NOT MY FAULT.  It's YOUR responsibility to check the implementation of this
-library.
+As this software deals with encryption/decryption, please note there is *NO* *WARRANTY*, not even
+with regards to FITNESS FOR A PARTICULAR PURPOSE or NONINFRINGEMENT.  This means if you use this
+library, and it turns out there's a flaw in the implementation that results in your data being
+hacked, *IT'S* *NOT* *MY* *FAULT*.  It's YOUR responsibility to check the implementation of this
+library and algorithm.
 
 == Author
 
-AES C reference code by Christophe Devine.  Thanks Christophe.
+Original AES C reference code by Christophe Devine.  Thanks Christophe!
 
 This gem copyright (c) 2010 {Nate Wiger}[http://nate.wiger.org].  Released under the MIT License.
 
