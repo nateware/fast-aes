@@ -19,13 +19,9 @@ describe 'FastAES' do
 
     # key can be 128, 192, or 256 bits
     key = '42#3b%c$dxyT,7a5=+5fUI3fa7352&^:'
-
     aes = FastAES.new(key)
-
     text = "Hey there, how are you?"
-
     data = aes.encrypt(text)
-
     aes.decrypt(data).should == text   # "Hey there, how are you?"
   end
 
@@ -35,6 +31,12 @@ describe 'FastAES' do
       aes = FastAES.new(key)
       aes.key.should == key
     end
+  end
+  
+  it "should raise an exception is the key isn't in the accepted range" do
+    lambda{FastAES.new('key')}.should raise_error  # 24-bit
+    lambda{FastAES.new('keykeyke')}.should raise_error # 64-bit
+    lambda{FastAES.new('keykeykeykeykeykeykeykeykeykeykey')}.should raise_error # 264-bit
   end
 
   it "should encrypt and decrypt messages (what a concept)" do
@@ -59,5 +61,15 @@ describe 'FastAES' do
     end
   end
   
+  it "should have a different encoding based on the key length" do
+    aes_1 = FastAES.new '12345678901234567890123456789012'
+    aes_2 = FastAES.new '123456789012345678901234'
+    aes_3 = FastAES.new '1234567890123456'
+    text  = "So long and thanks for all the fish"
+    secret_1, secret_2, secret_3 = aes_1.encrypt(text), aes_2.encrypt(text), aes_3.encrypt(text)
+    [secret_1, secret_2, secret_3].each do |secret|
+      ([secret_1, secret_2, secret_3] - [secret]).each{|message| message.should_not == secret}
+    end
+  end
+  
 end
-
