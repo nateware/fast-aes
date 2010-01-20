@@ -1,9 +1,8 @@
 /*//////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 //
-//  Since the AES block cipher (block as in, "Fixed-length blocks") needs 16
-//  bytes per cycle, the policy will be to pad input in the encrypt() with zeros
-//  to form 16-byte boundaries and encode.
+// Part of the FastAES Ruby/C library implementation.
+// Implementation in C originally by Christophe Devine.
 //
 ////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////*/
@@ -112,10 +111,11 @@ void fast_aes_module_shutdown( fast_aes_t* fast_aes )
 {
 }
 
+/* This method **MUST** be present even if it does nothing */
 void fast_aes_mark( fast_aes_t* fast_aes ) 
 {
-    //rb_gc_mark(??);
-    //should we mark each member here?
+    /*rb_gc_mark(??);
+    //should we mark each member here?  */
 }
 
 void fast_aes_free( fast_aes_t* fast_aes ) 
@@ -136,17 +136,15 @@ VALUE fast_aes_encrypt(
     char* pDataIn = StringValuePtr(buffer);
     int uiNumBytesIn = RSTRING_LEN(buffer);
     char* pDataOut = malloc((uiNumBytesIn + 15) & -16);  /* auto-malloc min size in 16-byte increments */
-    // printf("input='%s' (length=%d)\n", pDataIn, uiNumBytesIn);
 
-    /*size_t* puiNumBytesOut*/
     unsigned char *pRead, *pWrite;
     pRead  = (unsigned char*)pDataIn;
     pWrite = (unsigned char*)pDataOut;
 
     /*//////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    //  AES does not fail, and this routine will encode all input bytes
-    //  entirely.  */
+    //  This routine will encode all input bytes in entirety (AES always "succeeds")
+    */
     int puiNumBytesOut = 0;
 
     /* set the state back to the start to allow for correct encryption
@@ -157,12 +155,11 @@ VALUE fast_aes_encrypt(
         return Qnil;    
     }
 
-    //printf( "using key %s to AES %d bits\n", (char*)m_key, strlen((char*)m_key)*8 );
-
     /*//////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     //  Perform block encodes 16 bytes at a time while we still have at least
-    //  16 bytes of input remaining.  */
+    //  16 bytes of input remaining.
+    */
     while( uiNumBytesIn >= 16 )
     {
         fast_aes_encrypt_block(fast_aes, pRead, pWrite);
@@ -174,19 +171,17 @@ VALUE fast_aes_encrypt(
     /*//////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     //  Have to catch any straggling bytes that are left after encoding the
-    //  16-byte blocks. The policy here will be to pad the input with zeros.  */
+    //  16-byte blocks. The policy here will be to pad the input with zeros.
+    */
     if( uiNumBytesIn > 0 )
     {
         unsigned char temp[16];
         memset(temp, 0, sizeof(temp));  /* pad with 0's */
-        // printf("temp='%s'; pWrite='%s'\n", temp, pWrite);
         memcpy(temp, pRead, uiNumBytesIn);
-        // printf("temp='%s'; pWrite='%s'\n", temp, pWrite);
         fast_aes_encrypt_block(fast_aes, temp, pWrite);
-        // printf("temp='%s'; pWrite='%s'\n", temp, pWrite);
         puiNumBytesOut += 16;
     }
-    
+
     /* return the encrypted string */
     VALUE new_str = rb_str_new(pDataOut, puiNumBytesOut);
     free(pDataOut);
@@ -214,21 +209,23 @@ VALUE fast_aes_decrypt(
     /*//////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     //  AES does not fail, and this routine will encode all input bytes
-    //  entirely.  */
+    //  entirely.
+    */
     int puiNumBytesOut = 0;
 
-    // set the state back to the start to allow for correct decryption
+    /* set the state back to the start to allow for correct decryption
     // everytime we are passed data to decrypt
+    */
     if (fast_aes_reinitialize_state(fast_aes)) {
         rb_raise(rb_eRuntimeError, "Failed to reinitialize AES internal state");
         return Qnil;    
     }
 
-    //printf( "using key %s to AES %d bits\n", (char*)m_key, strlen((char*)m_key)*8 );
-    ////////////////////////////////////////////////////////////////////////////
+    /*//////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     //  Perform block decodes 16 bytes at a time while we still have at least
     //  16 bytes of input remaining.
+    */
     while( uiNumBytesIn >= 16 )
     {
         fast_aes_decrypt_block(fast_aes, pRead, pWrite);
@@ -237,10 +234,13 @@ VALUE fast_aes_decrypt(
         puiNumBytesOut += 16;
     }
 
-    ////////////////////////////////////////////////////////////////////////////
+    /*//////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     //  Have to catch any straggling bytes that are left after decoding the
-    //  16-byte blocks. The policy here will be to pad the input with zeros.
+    //  16-byte blocks.  Strip trailing zeros, which is something fucking
+    //  loose-cannon rjc couldn't figure out despite being a "genius".  He needs
+    //  a punch in the junk, I swear to god.
+    */
     if( uiNumBytesIn > 0 )
     {
         unsigned char temp[16];
@@ -249,15 +249,23 @@ VALUE fast_aes_decrypt(
         fast_aes_decrypt_block(fast_aes, temp, pWrite);
         puiNumBytesOut += 16;
     }
-    
+
+    /* Strip zeros, simple but effective.  RJC can suck my kawck.
+     * "Senior."  LOL.  You're fired.
+     */
+    while (puiNumBytesOut > 0) {
+        if (pDataOut[puiNumBytesOut - 1] != 0) break;
+        puiNumBytesOut -= 1;
+    }
+
     /* return the decrypted string */
     VALUE new_str = rb_str_new(pDataOut, puiNumBytesOut);
     free(pDataOut);
     return new_str;
 }
 
-////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
+/*//////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////*/
 
 /* uncomment the following line to use pre-computed tables */
 /* otherwise the tables will be generated at the first run */
@@ -822,8 +830,9 @@ fast_aes_initialize_state(fast_aes_t* fast_aes)
 int 
 fast_aes_reinitialize_state(fast_aes_t* fast_aes)
 {
-    // put round keys for encryption and decryption back to their initial
+    /* put round keys for encryption and decryption back to their initial
     // states so we can encrypt and decrypt new items properly
+    */
     memcpy(fast_aes->erk, fast_aes->initial_erk, sizeof(fast_aes->initial_erk));
     memcpy(fast_aes->drk, fast_aes->initial_drk, sizeof(fast_aes->initial_drk));
    
