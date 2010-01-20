@@ -12,7 +12,7 @@ The algorithm itself was extracted from work by Christophe Devine for the open s
     Well, I've tried to make the code as simple and straightforward as 
     possible; I also used a few basic tricks, like loop unrolling. 
 
-Since this library wraps the sbd implementation, it supports a subset of AES, specifically:
+This gem supports the most important features of AES, specifically:
 
 * 128, 192, and 256-bit ciphers
 * Cipher Block Chaining (CBC) mode only
