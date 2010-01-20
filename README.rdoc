@@ -24,9 +24,9 @@ This library supports a subset of AES functionality, specifically 129, 192, and 
 == Special Note
 
 As this software deals with encryption/decryption, please note there is NO WARRANTY, even
-with regards to FITNESS FOR A PARTICULAR PURPOSE.  *This means if you use this library,
+with regards to FITNESS FOR A PARTICULAR PURPOSE.  This means if you use this library,
 and it turns out there's a flaw in the implementation that results in your data being
-hacked, IT'S NOT MY FAULT.*  It's YOUR responsibility to check the implementation of this
+hacked, IT'S NOT MY FAULT.  It's YOUR responsibility to check the implementation of this
 library.
 
 == Author

@@ -1,11 +1,8 @@
 /*//////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 //
-//  Copyright 2009 Sony Computer Entertainment of America, Inc.
-//  All Rights Reserved
-//
 //  Since the AES block cipher (block as in, "Fixed-length blocks") needs 16
-//  bytes per cycle, the policy will be to pad input at the encrypt with zeros
+//  bytes per cycle, the policy will be to pad input in the encrypt() with zeros
 //  to form 16-byte boundaries and encode.
 //
 ////////////////////////////////////////////////////////////////////////////////
@@ -78,10 +75,6 @@ VALUE fast_aes_initialize(VALUE self, VALUE key)
         fast_aes_do_gen_tables = 0;
     }
 
-    // /* we only copy the key over if it's not set yet */
-    // if( !fast_aes_bits || !fast_aes_key )
-    //     return Qfalse;
-    // 
     /* if they are trying to use a number of bits that is larger that the key
      * has available, truncate the bits to the key bits.
      * ie., they pass a 128 bit key but pass keytype N256 we will use N128

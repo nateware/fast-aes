@@ -1,30 +1,25 @@
 /*//////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 //
-//  Copyright 2009 Sony Computer Entertainment of America, Inc.
-//  All Rights Reserved
+//  Part of the FastAES Ruby/C library implementation.
+//
+// Original implementation: http://www.cycom.se/dl/sbd 
+// File: sbd-1.27.tar.gz
+//
+// This Ruby extension, which is a derivitive work from Christophe Devine's original
+// AEScrypt optimized C sources, provides an implementation of the United States
+// Government's Advanced Encryption Standard (AES) (aka "Rijndael" algorithm).
+// This is a 256-bit private-key block cipher written entirely in C for maximum
+// portability across a perverse number of target architectures.
+// 
+// The Rijndael algorithm is 100% patent-free and completely unencumbered in any
+// way, much unlike the RSA algorithms used in other software. We can use this
+// cipher.
 //
 ////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////*/
 #ifndef __fast_aes_h
 #define __fast_aes_h
-
-/**
- * http://www.cycom.se/dl/sbd 
- * file: sbd-1.27.tar.gz
- * This Ruby extension, which is a derivitive work from Christophe Devine's original
- * AEScrypt optimized C sources, provides an implementation of the United States
- * Government's Advanced Encryption Standard (AES) Rijndael algorithm. This is a
- * 256-bit private-key block cipher written entirely in C for maximum
- * portability across a perverse number of target architectures.
- * 
- * The Rijndael algorithm is 100% patent-free and completely unencumbered in any
- * way, much unlike the RSA algorithms used in other software. We can use this
- * cipher.
- * 
- * @short Rijndael AES Cipher
- * @since 1.0
- */
 
 /* structure to store our key and keysize */
 typedef struct {
