@@ -46,7 +46,7 @@ Simple encryption/decryption:
   require 'fast-aes'
 
   # key can be 128, 192, or 256 bits
-  key = '424b3b5c4d454c7a51376748255d7b7156585f543f776243227352746f' 
+  key = '42#3b%c$dxyT,7a5=+5fUI3fa7352&^:'
 
   aes = FastAES.new(key)
 

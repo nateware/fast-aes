@@ -14,6 +14,21 @@ describe 'FastAES' do
     require 'fast-aes'
   end
 
+  it "should run the README duh" do
+    require 'fast-aes'
+
+    # key can be 128, 192, or 256 bits
+    key = '42#3b%c$dxyT,7a5=+5fUI3fa7352&^:'
+
+    aes = FastAES.new(key)
+
+    text = "Hey there, how are you?"
+
+    data = aes.encrypt(text)
+
+    aes.decrypt(data).should == text   # "Hey there, how are you?"
+  end
+
   it "should accept 128, 192, and 256-bit keys" do
     [128, 192, 256].each do |bits|
       key = 'a' * (bits/8)
