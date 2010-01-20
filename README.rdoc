@@ -16,17 +16,19 @@ Since this library wraps the sbd implementation, it supports a subset of AES, sp
 
 * 128, 192, and 256-bit ciphers
 * Cipher Block Chaining (CBC) mode only
-* Encrypted blocks are padded at 16-bit boundaries ({read more on padding}[http://www.di-mgt.com.au/cryptopad.html#whatispadding]).
+* Encrypted blocks are padded at 16-bit boundaries ({read more on padding}[http://www.di-mgt.com.au/cryptopad.html#whatispadding])
 
 You can read specifics about AES-CBC in the IPSec-related {RFC 3602}[http://www.rfc-archive.org/getrfc.php?rfc=3602],
 if you really care that much.
+
+Bottom line, this gem works.  Fast.
 
 === Other Ruby AES gems
 
 I couldn't find any that worked worth a crap.  The {ruby-aes}[http://rubyforge.org/projects/ruby-aes/]
 project has Ruby 1.9 bugs that have been open over _two_ _years_ now, {crypt/rijndael}[http://crypt.rubyforge.org/rijndael.html]
 doesn't work on Ruby 1.9 and is *SLOOOOOOW* (as it's written in Ruby), and some people even report getting
-{different encryption results from different libraries}[http://blade.nagaokaut.ac.jp/cgi-bin/scat.rb/ruby/ruby-talk/228214].
+{inconsistent encryption results from other libraries}[http://blade.nagaokaut.ac.jp/cgi-bin/scat.rb/ruby/ruby-talk/228214].
 
 So I grabbed some C reference code, wrapped a Ruby interface around it, and voíla.
 
@@ -72,11 +74,11 @@ alternative (although AES is faster, and setup is slightly easier).
 
 === AES vs Other Encryption Standards
 
-There are a bizillion (literally (really)) different encryption standards out there.  If you have
+There are a bizillion (literally!) different encryption standards out there.  If you have
 a PhD, and can't find a job, writing an encryption algorithm is a good thing to put on your resume -
 on that outside chance that someone will hire you and use it.  If you don't possess the talent to
 write an encryption standard, you can spend hours trying to crack one - for similar reasons.  As a
-result, of the other encryption alternatives, most are either (a) cracked or (b) covered by patents.
+result, of the many encryption alternatives, most are either (a) cracked or (b) covered by patents.
 
 Personally, when it comes to encryption, I think choosing what the US government chooses is a decent
 choice.  They tend to be "security conscious."
@@ -86,8 +88,8 @@ choice.  They tend to be "security conscious."
 As this software deals with encryption/decryption, please note there is *NO* *WARRANTY*, not even
 with regards to FITNESS FOR A PARTICULAR PURPOSE or NONINFRINGEMENT.  This means if you use this
 library, and it turns out there's a flaw in the implementation that results in your data being
-hacked, *IT'S* *NOT* *MY* *FAULT*.  It's YOUR responsibility to check the implementation of this
-library and algorithm.
+hacked, *IT* *IS* *NOT* *MY* *FAULT*.  It's YOUR responsibility to check the implementation of this
+library and algorithm.  If you can't understand C code, that's NOT MY PROBLEM.
 
 == Author
 
