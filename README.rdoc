@@ -36,7 +36,6 @@ C'mon people, it's not that hard.  It's called Google.  In my day, you had to ac
 
 == Installation
 
-  gem install gemcutter
   gem install fast-aes
 
 == Example
