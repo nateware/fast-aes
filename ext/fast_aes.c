@@ -223,7 +223,7 @@ VALUE fast_aes_decrypt(
 
     /*//////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    //  Perform block decodes 16 bytes at a time while we still have at least
+    //  Perform block decrypts 16 bytes at a time while we still have at least
     //  16 bytes of input remaining.
     */
     while( uiNumBytesIn >= 16 )
@@ -236,10 +236,8 @@ VALUE fast_aes_decrypt(
 
     /*//////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
-    //  Have to catch any straggling bytes that are left after decoding the
-    //  16-byte blocks.  Strip trailing zeros, which is something fucking
-    //  loose-cannon rjc couldn't figure out despite being a "genius".  He needs
-    //  a punch in the junk, I swear to god.
+    //  Have to catch any straggling bytes that are left after decrypting the
+    //  16-byte blocks.
     */
     if( uiNumBytesIn > 0 )
     {
@@ -250,9 +248,12 @@ VALUE fast_aes_decrypt(
         puiNumBytesOut += 16;
     }
 
-    /* Strip zeros, simple but effective.  RJC can suck my kawck.
-     * "Senior."  LOL.  You're fired.
-     */
+    /*//////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+    // Strip trailing zeros, simple but effective.  This is something fucking
+		// loose-cannon rjc couldn't figure out despite being a "genius".  He needs
+		// a punch in the junk, I swear to god.
+    */
     while (puiNumBytesOut > 0) {
         if (pDataOut[puiNumBytesOut - 1] != 0) break;
         puiNumBytesOut -= 1;
