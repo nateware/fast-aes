@@ -1,6 +1,6 @@
 spec = Gem::Specification.new do |s|
   s.name = 'fast-aes'
-  s.version = '0.1.0'
+  s.version = '0.1.1'
   s.summary = "Fast AES implementation in C.  Works with Ruby 1.8 and 1.9"
   s.description = s.summary + '.'
   s.files = Dir['ext/**/*.{rb,c,h}'] + Dir['lib/**/*.rb'] + Dir['spec/**/*.rb'] + Dir['test/**/*.rb']
