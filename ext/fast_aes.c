@@ -200,7 +200,6 @@ VALUE fast_aes_decrypt(
     char* pDataIn = StringValuePtr(buffer);
     int uiNumBytesIn = RSTRING_LEN(buffer);
     char* pDataOut = malloc((uiNumBytesIn + 15) & -16);  /* auto-malloc min size in 16-byte increments */
-    pDataOut = malloc(uiNumBytesIn + 15);
 
     unsigned char *pRead, *pWrite;
     pRead  = (unsigned char*)pDataIn;
