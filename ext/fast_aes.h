@@ -25,19 +25,22 @@
 
 /* structure to store our key and keysize */
 typedef struct {
-    unsigned char key[256];  /* max key is 256 */
-    int  key_bits;  /* 128, 192, 256  */
+    u8  key[256];  /* max key is 256 */
+    int key_bits;  /* 128, 192, 256  */
 
     /* Encryption Round Keys */
     u32 erk[4*(MAXNR + 1)];
     u32 initial_erk[4*(MAXNR + 1)];
+    char inited_erk;
 
     /* Decryption Round Keys */
     u32 drk[4*(MAXNR + 1)];
     u32 initial_drk[4*(MAXNR + 1)];
+    char inited_drk;
 
     /* Number of rounds. */
     int nr;
+
 } fast_aes_t;
 
 /* class functions */
@@ -50,7 +53,6 @@ VALUE fast_aes_key(VALUE self);
 
 /* setup round keys */
 int fast_aes_initialize_state(fast_aes_t* fast_aes_config);
-int fast_aes_initialize_state();
 
 /* encryption routines */
 VALUE fast_aes_encrypt(VALUE self, VALUE buffer);

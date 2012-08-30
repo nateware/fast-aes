@@ -1,6 +1,8 @@
 require 'bacon'
 
 $LOAD_PATH.unshift File.expand_path(File.dirname(__FILE__) + '/..')
+$LOAD_PATH.unshift File.expand_path(File.dirname(__FILE__) + "/../ext/#{RUBY_PLATFORM}")
+
 require 'fast_aes'
 
 Bacon.summary_at_exit
@@ -10,11 +12,23 @@ end
 
 require 'digest'
 
+def random_key(len)
+  x = ''
+  (len/8).times do
+    c = rand(256) until !c.nil? && c != 0
+    x << c.chr
+  end
+  x
+end
+
 # Some sample keys
 TEST_KEYS = [
-  Digest::SHA256.hexdigest('foo').hex,
-  Digest::SHA256.hexdigest('bar').hex,
-  Digest::SHA256.hexdigest('fuck').hex
+  random_key(128),
+  random_key(128),
+  random_key(192),
+  random_key(192),
+  random_key(256),
+  random_key(256)
 ]
 
 LOREM_IPSUM = <<-EndLorem

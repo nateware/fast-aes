@@ -23,6 +23,13 @@ int fast_aes_do_gen_tables = 1;
   #define RSTRING_LEN(s) (RSTRING(s)->len)
 #endif
 
+/* http://stackoverflow.com/questions/1941307/c-debug-print-macros */
+#ifdef DEBUG
+  #define DEBUG_PRINT(...) do{ fprintf( stderr, __VA_ARGS__ ); } while(0)
+#else
+  #define DEBUG_PRINT(...) do{ } while (0)
+#endif
+
 /* Ruby buckets */
 VALUE rb_cFastAES;
 
@@ -72,7 +79,8 @@ VALUE fast_aes_initialize(VALUE self, VALUE key)
     char* key_data = StringValuePtr(key);
 
     /* determine key bits based on string length. breaks if try to use \0 in string. */
-    key_bits = strlen(key_data)*8;
+    key_bits = (int)strlen(key_data)*8;
+    /*DEBUG_PRINT("AES key=%s, bits=%d\n", key_data, key_bits);*/
     switch(key_bits)
     {
         case 128:
@@ -80,13 +88,16 @@ VALUE fast_aes_initialize(VALUE self, VALUE key)
         case 256:
             fast_aes->key_bits = key_bits;
             memcpy(fast_aes->key, key_data, key_bits/8);
-            /*printf("AES key=%s, bits=%d\n", fast_aes->key, fast_aes->key_bits);*/
+            /*DEBUG_PRINT("AES key=%s, bits=%d\n", fast_aes->key, fast_aes->key_bits);*/
             break;
         default:
-            sprintf(error_mesg, "AES key must be 128, 192, or 256 bits in length (got %d): %s", key_bits, key_data);
-            rb_raise(rb_eArgError, error_mesg);
+            rb_raise(rb_eArgError, "AES key must be 128, 192, or 256 bits in length (got %d): %s", key_bits, key_data);
             return Qnil;
     }
+
+    /* reset state flags */
+    fast_aes->inited_erk = 0;
+    fast_aes->inited_drk = 0;
 
     if (fast_aes_initialize_state(fast_aes)) {
         rb_raise(rb_eRuntimeError, "Failed to initialize AES internal state");
@@ -146,9 +157,14 @@ VALUE fast_aes_encrypt(
     Data_Get_Struct(self, fast_aes_t, fast_aes);
  
     char* text = StringValuePtr(buffer);
-    int bytes_in = RSTRING_LEN(buffer);
+    int bytes_in = (int)RSTRING_LEN(buffer);
     char* data = malloc((bytes_in + 15) & -16);  /* auto-malloc min size in 16-byte increments */
+    if (data == NULL) {
+        rb_raise(rb_eRuntimeError, "Failed to allocate memory for encrypt");
+        return Qnil;    
+    }
     unsigned char temp[16];
+    DEBUG_PRINT("encrypt: %s\n", text);
 
     /* pointers to traverse text/data */
     unsigned char *ptext, *pdata;
@@ -175,6 +191,7 @@ VALUE fast_aes_encrypt(
     //  16 bytes of input remaining.
     */
     while (bytes_in >= 16) {
+        DEBUG_PRINT("encrypt: %d in, %d out; in=%p, out=%p\n", bytes_in, bytes_out, ptext, pdata);
         rijndaelEncrypt(fast_aes->erk, fast_aes->nr, ptext, pdata);
         ptext += 16;
         pdata += 16;
@@ -188,6 +205,7 @@ VALUE fast_aes_encrypt(
     //  16-byte blocks. The policy here will be to pad the input with zeros.
     */
     if (bytes_in > 0) {
+        DEBUG_PRINT("encrypt: %d extra bytes\n", bytes_in);
         memset(temp, 0, sizeof(temp));  /* pad with 0's */
         memcpy(temp, ptext, bytes_in);
         rijndaelEncrypt(fast_aes->erk, fast_aes->nr, temp, pdata);
@@ -195,7 +213,7 @@ VALUE fast_aes_encrypt(
     }
 
     /* return the encrypted string */
-    VALUE new_str = rb_str_new(pdata, bytes_out);
+    VALUE new_str = rb_str_new(data, bytes_out);
     free(data);
     return new_str;
 }
@@ -210,9 +228,14 @@ VALUE fast_aes_decrypt(
     Data_Get_Struct(self, fast_aes_t, fast_aes);
  
     char* data = StringValuePtr(buffer);
-    int bytes_in = RSTRING_LEN(buffer);
+    int bytes_in = (int)RSTRING_LEN(buffer);
     char* text = malloc((bytes_in + 15) & -16);  /* auto-malloc min size in 16-byte increments */
+    if (text == NULL) {
+        rb_raise(rb_eRuntimeError, "Failed to allocate memory for decrypt");
+        return Qnil;    
+    }
     unsigned char temp[16];
+    DEBUG_PRINT("decrypt: %s\n", data);
 
     /* pointers to traverse text/data */
     unsigned char *ptext, *pdata;
@@ -239,37 +262,26 @@ VALUE fast_aes_decrypt(
     //  16 bytes of input remaining.
     */
     while (bytes_in >= 16) {
-        rijndaelEncrypt(fast_aes->drk, fast_aes->nr, pdata, ptext);
+        DEBUG_PRINT("decrypt: %d in, %d out; in=%p, out=%p\n", bytes_in, bytes_out, pdata, ptext);
+        rijndaelDecrypt(fast_aes->drk, fast_aes->nr, pdata, ptext);
         ptext += 16;
         pdata += 16;
         bytes_in  -= 16;
         bytes_out += 16;
     }
 
-    /*//////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-    //  Have to catch any straggling bytes that are left after encoding the
-    //  16-byte blocks. The policy here will be to pad the input with zeros.
-    */
-    if (bytes_in > 0) {
-        memset(temp, 0, sizeof(temp));  /* pad with 0's */
-        memcpy(temp, pdata, bytes_in);
-        rijndaelEncrypt(fast_aes->drk, fast_aes->nr, temp, ptext);
-        bytes_out += 16;
-    }
+    /* AES decryption should always be 16-byte blocks */
+    if (bytes_in != 0)
+        rb_raise(rb_eRuntimeError, "Hit %d straggling bytes on AES decrypt (should be 16-byte blocks)", bytes_in);
 
-    /*//////////////////////////////////////////////////////////////////////////
-    // Strip trailing zeros, simple but effective.  This is something fucking
-		// loose-cannon rjc couldn't figure out despite being a "genius".  He needs
-		// a punch in the junk, I swear to god.
-    */
-    while (bytes_out > 0) {
-        if (ptext[bytes_out - 1] != 0) break;
+    /* Strip trailing zeros post decrypt which were added by padding. */
+    for (int i=0; bytes_out > 0 && i < 16; i++) {
+        if (text[bytes_out - 1] != 0) break;
         bytes_out -= 1;
     }
 
     /* return the encrypted string */
-    VALUE new_str = rb_str_new(ptext, bytes_out);
+    VALUE new_str = rb_str_new(text, bytes_out);
     free(text);
     return new_str;
 }

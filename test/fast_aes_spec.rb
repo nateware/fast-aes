@@ -14,11 +14,21 @@ describe "FastAES" do
     text.should == aes.decrypt(data)   # "Hey there, how are you?"
   end
 
+  it "should fail on bad keys" do
+    e = nil
+    begin
+      FastAES.new("too short")
+    rescue => e
+    end
+    e.should.be.kind_of ArgumentError
+  end
+
   it "should handle different key lengths" do
     TEST_KEYS.each do |key|
-      aes = FastAES.new(key.to_s)
+      aes = FastAES.new(key)
       data = aes.encrypt(LOREM_IPSUM)
       text = aes.decrypt(data)
+      text.should == LOREM_IPSUM
     end
   end
 end

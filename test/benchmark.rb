@@ -2,38 +2,36 @@
 # Comparison of AES encryption libraries
 #
 
-$LOAD_PATH.unshift "#{File.dirname(__FILE__)}/../ext/#{RUBY_PLATFORM}"
+require File.expand_path('spec_helper', File.dirname(__FILE__))
 
 require 'benchmark'
-require './fast_aes'
-#require 'crypt/rijndael'
-
-CHARS = ('A'..'z').collect{|x| x.to_s}
-
-def random_key(bits)
-  str = ''
-  (bits/8).times do
-    str += CHARS[rand(CHARS.length)]
-  end
-  str
-end
+require 'openssl'
 
 Benchmark.bmbm(20) do |bm|
-  #bm.report 'crypt/rijndael' do
-  #  1000.times do
-  #    rijndael = Crypt::Rijndael.new(random_key(256))
-  #    plainBlock = "ABCDEFGH12345678"
-  #    encryptedBlock = rijndael.encrypt_block(plainBlock)
-  #    decryptedBlock = rijndael.decrypt_block(encryptedBlock)
-  #  end
-  #end
+  bm.report 'openssl' do
+    10000.times do
+      cipher = OpenSSL::Cipher.new("AES-256-CBC")
+      cipher.encrypt
+      key = cipher.random_key
+      iv  = cipher.random_iv
+      enc = cipher.update(LOREM_IPSUM) + cipher.final
+
+      cipher = OpenSSL::Cipher.new("AES-256-CBC")
+      cipher.decrypt
+      cipher.key = key
+      cipher.iv  = iv
+      dec = cipher.update(enc) + cipher.final
+
+      raise "mismatch" unless dec == LOREM_IPSUM
+    end
+  end
 
   bm.report 'fast_aes' do
     10000.times do
       aes = FastAES.new(random_key(256))
-      plainBlock = "ABCDEFGH12345678"
-      encryptedBlock = aes.encrypt(plainBlock)
-      decryptedBlock = aes.decrypt(encryptedBlock)
+      enc = aes.encrypt(LOREM_IPSUM)
+      dec = aes.decrypt(enc)
+      raise "mismatch" unless dec == LOREM_IPSUM
     end
   end
   
