@@ -21,46 +21,45 @@
 #ifndef __fast_aes_h
 #define __fast_aes_h
 
+#include "rijndael-alg-fst.h"
+
 /* structure to store our key and keysize */
 typedef struct {
-    char key[256];  /* max key is 256 */
+    unsigned char key[256];  /* max key is 256 */
     int  key_bits;  /* 128, 192, 256  */
 
     /* Encryption Round Keys */
-    unsigned int erk[64];
-	  unsigned int initial_erk[64];
+    u32 erk[4*(MAXNR + 1)];
+    u32 initial_erk[4*(MAXNR + 1)];
 
     /* Decryption Round Keys */
-    unsigned int drk[64];
-	  unsigned int initial_drk[64];
+    u32 drk[4*(MAXNR + 1)];
+    u32 initial_drk[4*(MAXNR + 1)];
 
     /* Number of rounds. */
     int nr;
 } fast_aes_t;
 
-/* functions */
+/* class functions */
 void Init_fast_aes();
 VALUE fast_aes_alloc(VALUE klass);
 VALUE fast_aes_initialize(VALUE self, VALUE key);
-void fast_aes_gen_tables();
-int  fast_aes_initialize_state(fast_aes_t* fast_aes_config);
+
+/* get key value (not set) */
 VALUE fast_aes_key(VALUE self);
+
+/* setup round keys */
+int fast_aes_initialize_state(fast_aes_t* fast_aes_config);
+int fast_aes_initialize_state();
+
+/* encryption routines */
+VALUE fast_aes_encrypt(VALUE self, VALUE buffer);
+VALUE fast_aes_decrypt(VALUE self, VALUE buffer);
 
 /* garbage collection */
 void fast_aes_mark(fast_aes_t* fast_aes_config);
 void fast_aes_free(fast_aes_t* fast_aes_config);
 void fast_aes_module_shutdown(fast_aes_t* fast_aes_config);    
-
-/* and actual, bonafide encryption */
-VALUE fast_aes_encrypt(VALUE self, VALUE buffer);
-
-VALUE fast_aes_decrypt(VALUE self, VALUE buffer);
-
-void fast_aes_encrypt_block(fast_aes_t* fast_aes, unsigned char input[16], unsigned char output[16]);
-void fast_aes_decrypt_block(fast_aes_t* fast_aes, unsigned char input[16], unsigned char output[16]);
-
-int fast_aes_reinitialize_state();
-int fast_aes_initialize_state();
 
 #endif // __fast_aes_h
 
