@@ -96,7 +96,7 @@ VALUE fast_aes_initialize(VALUE self, VALUE key)
             break;
         default:
                         sprintf(error_mesg, "AES key must be 128, 192, or 256 bits in length (got %d): %s", key_bits, key_data);
-            rb_raise(rb_eArgError, error_mesg);
+            rb_raise(rb_eArgError, "%s", error_mesg);
             return Qnil;
     }
 
