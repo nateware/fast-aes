@@ -1,0 +1,5 @@
+ext/fast_aes.o
+ext/fast_aes.bundle
+ext/Makefile
+ext/x86_64-darwin13.0/
+ext/.RUBYARCHDIR.time

@@ -16,6 +16,7 @@
 
 /* Global boolean */
 int fast_aes_do_gen_tables = 1;
+int fast_aes_printed_deprecation_notice = 0;
 
 /* Old school.  Oh yeah */
 #ifndef RSTRING_PTR
@@ -95,9 +96,24 @@ VALUE fast_aes_initialize(VALUE self, VALUE key)
             /*printf("AES key=%s, bits=%d\n", fast_aes->key, fast_aes->key_bits);*/
             break;
         default:
-                        sprintf(error_mesg, "AES key must be 128, 192, or 256 bits in length (got %d): %s", key_bits, key_data);
+            sprintf(error_mesg, "AES key must be 128, 192, or 256 bits in length (got %d): %s", key_bits, key_data);
             rb_raise(rb_eArgError, "%s", error_mesg);
             return Qnil;
+    }
+
+    /* Deprecation warning */
+    if (! fast_aes_printed_deprecation_notice) {
+        fprintf(stderr,
+            "*************************************************************************************\n"
+            "* WARNING: The Ruby fast-aes gem is insecure and should NOT be used!                *\n"
+            "* Please switch to: http://ruby-doc.org/stdlib-2.0/libdoc/openssl/rdoc/OpenSSL.html *\n"
+            "* If this message is a mystery, you have a gem that depends on fast-aes             *\n"
+            "* Check your Gemfile.lock for any gems that depend on fast-aes                      *\n"
+            "* To silence this message, you can lock fast-aes to version = 0.1.1 in your Gemfile *\n"
+            "*************************************************************************************\n"
+            "\n"
+        );
+        fast_aes_printed_deprecation_notice = 1;
     }
 
     if (fast_aes_initialize_state(fast_aes)) {
@@ -250,8 +266,8 @@ VALUE fast_aes_decrypt(
     /*//////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
     // Strip trailing zeros, simple but effective.  This is something fucking
-		// loose-cannon rjc couldn't figure out despite being a "genius".  He needs
-		// a punch in the junk, I swear to god.
+        // loose-cannon rjc couldn't figure out despite being a "genius".  He needs
+        // a punch in the junk, I swear to god.
     */
     while (puiNumBytesOut > 0) {
         if (pDataOut[puiNumBytesOut - 1] != 0) break;

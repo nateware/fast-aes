@@ -1,6 +1,50 @@
-= FastAES - Fast AES implementation for Ruby in C
+= FastAES - Simple but LOW security AES gem
 
-This is a lightweight, fast implementation of AES (the US government's Advanced Encryption Standard,
+**This gem is a relic from 5 years ago, when libraries such as OpenSSL did not work correctly with Ruby.**
+**Use in new projects is strongly discouraged. The core Ruby OpenSSL library is faster and more secure.**
+
+== Replacement Code
+
+Refer to the {Ruby OpenSSL documentation}[http://ruby-doc.org/stdlib-2.0/libdoc/openssl/rdoc/OpenSSL.html]
+for details on how to leverage AES:
+
+    cipher = OpenSSL::Cipher.new 'AES-256-CBC'
+    cipher.encrypt
+    iv = cipher.random_iv
+
+    pwd = 'some hopefully not too guessable password'
+    salt = OpenSSL::Random.random_bytes 16
+    iter = 20000
+    key_len = cipher.key_len
+    digest = OpenSSL::Digest::SHA256.new
+
+    key = OpenSSL::PKCS5.pbkdf2_hmac(pwd, salt, iter, key_len, digest)
+    cipher.key = key
+
+    # Now encrypt the data:
+    encrypted = cipher.update document
+    encrypted << cipher.final
+
+As mentioned, alot has changed in *5 years* since this gem was written.  Please do not use it anymore.
+
+=== Security Notice
+
+A while back a {github issue tracker}[https://github.com/nateware/fast-aes/issues/2] was filed highlighting
+that this gem supports ECB and not the (significantly) more secure CBC method.  You can read more details
+on {Wikipedia's ECB writeup}[http://en.wikipedia.org/wiki/Block_cipher_modes_of_operation#Electronic_codebook_.28ECB.29].
+From the article:
+
+    The disadvantage of this method is that identical plaintext blocks are encrypted into
+    identical ciphertext blocks; thus, it does not hide data patterns well. In some senses,
+    it doesn't provide serious message confidentiality, and it is not recommended for use in
+    cryptographic protocols at all.
+
+If you're concerned about security, you need take responsibility for verifying whether this
+gem meets your requirements.
+
+== Original Into
+
+This is a simple implementation of AES (the US government's Advanced Encryption Standard,
 aka "Rijndael"), written in C for speed.  You can read more on the {Wikipedia AES Page}[http://en.wikipedia.org/wiki/Advanced_Encryption_Standard].
 The algorithm itself was extracted from work by Christophe Devine for the open source Netcat clone
 {sbd}[http://www.cycom.se/dl/sbd]. According to the community, this is
@@ -12,31 +56,15 @@ The algorithm itself was extracted from work by Christophe Devine for the open s
     Well, I've tried to make the code as simple and straightforward as 
     possible; I also used a few basic tricks, like loop unrolling. 
 
-This gem supports the most important features of AES, specifically:
+This gem supports the main features of AES, specifically:
 
 * 128, 192, and 256-bit ciphers
 * Electronic Codebook (ECB) mode only - *see* *Security* *Note*
 * Encrypted blocks are padded at 16-bit boundaries ({read more on padding}[http://www.di-mgt.com.au/cryptopad.html#whatispadding])
 
-You can read specifics about AES-ECB in the IPSec-related {RFC 3602}[http://www.rfc-archive.org/getrfc.php?rfc=3602],
-if you really care that much.
+You can read specifics about AES-ECB in the IPSec-related {RFC 3602}[http://www.rfc-archive.org/getrfc.php?rfc=3602].
 
-Bottom line, this gem works.  Fast.
-
-=== Other Ruby AES gems
-
-I couldn't find any that worked worth a crap.  The {ruby-aes}[http://rubyforge.org/projects/ruby-aes/]
-project has Ruby 1.9 bugs that have been open over _two_ _years_ now, {crypt/rijndael}[http://crypt.rubyforge.org/rijndael.html]
-doesn't work on Ruby 1.9 and is sloooow (as it's written in Ruby), and some people even report getting
-{inconsistent encryption results from other libraries}[http://blade.nagaokaut.ac.jp/cgi-bin/scat.rb/ruby/ruby-talk/228214].
-
-So I grabbed some C reference code off the googles, wrapped a Ruby interface around it, and voíla.
-
-== Installation
-
-  gem install fast-aes
-
-== Example
+=== Example
 
 Simple encryption/decryption:
 
@@ -83,28 +111,6 @@ result, of the many encryption alternatives, most are either (a) cracked or (b) 
 
 Personally, when it comes to encryption, I think choosing what the US government chooses is a decent
 choice.  They tend to be "security conscious."
-
-=== Security Note
-
-As this software deals with encryption/decryption, please note there is *NO* *WARRANTY*, not even
-with regards to FITNESS FOR A PARTICULAR PURPOSE or NONINFRINGEMENT.  This means if you use this
-library, and it turns out there's a flaw in the implementation that results in your data being
-hacked, *IT* *IS* *NOT* *MY* *FAULT*.  It's YOUR responsibility to check the implementation of this
-library and algorithm.  If you can't understand C code, that's NOT MY PROBLEM.
-
-A little while back a {github issue tracker}[https://github.com/nateware/fast-aes/issues/2] was filed noticing
-that this gem supports ECB and not the (significantly) more secure CBC method.  You can read more details
-on {Wikipedia's ECB writeup}[http://en.wikipedia.org/wiki/Block_cipher_modes_of_operation#Electronic_codebook_.28ECB.29].
-From the article:
-
-    The disadvantage of this method is that identical plaintext blocks are encrypted into
-    identical ciphertext blocks; thus, it does not hide data patterns well. In some senses,
-    it doesn't provide serious message confidentiality, and it is not recommended for use in
-    cryptographic protocols at all.
-
-I'll be honest: I'm not a security expert, and I don't use this for anything top secret.  If you're
-concerned about serious security, you need take responsibility for verifying whether this gem meets
-your requirements.
 
 == Author
 
