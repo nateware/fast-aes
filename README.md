@@ -6,9 +6,9 @@
 ## Replacement Code
 
 Refer to the [Ruby OpenSSL documentation](http://ruby-doc.org/stdlib-2.0/libdoc/openssl/rdoc/OpenSSL.html)
-for details on how to leverage AES:
+for details on how to leverage AES in Ruby:
 
-    cipher = OpenSSL::Cipher.new 'AES-256-CBC'
+    cipher = OpenSSL::Cipher.new 'AES-128-CBC'
     cipher.encrypt
     iv = cipher.random_iv
 
@@ -25,7 +25,7 @@ for details on how to leverage AES:
     encrypted = cipher.update document
     encrypted << cipher.final
 
-As mentioned, alot has changed in *5 years* since this gem was written.  Please do not use it anymore.
+As mentioned, alot has changed in the **5+ years** since this gem was written.  Please do not use it anymore.
 
 ### Security Notice
 
@@ -41,9 +41,9 @@ From the article:
 > cryptographic protocols at all.
 
 If you're concerned about security, you need take responsibility for verifying whether this
-gem meets your requirements.
+gem meets your requirements.  It probably does not.
 
-## Original Into
+## Original Intro
 
 This is a simple implementation of AES (the US government's Advanced Encryption Standard,
 aka "Rijndael"), written in C for speed.  You can read more on the
@@ -61,7 +61,7 @@ You can read specifics about AES-ECB in the IPSec-related [RFC 3602](http://www.
 
 ### Example
 
-Simple encryption/decryption:
+Basic encryption/decryption with this gem:
 
     require 'fast-aes'
 
@@ -76,7 +76,6 @@ Simple encryption/decryption:
 
     puts aes.decrypt(data)   # "Hey there, how are you?"
 
-Pretty simple, jah?
 
 ## Why AES?
 
@@ -88,10 +87,10 @@ In that case, if you need security, SSL is the obvious choice (and the right one
 But there will probably come a time, padawan, when you need a couple backend servers to talk -
 maybe job servers, or an admin port, or whatever.  Maybe even a simple chat server.
 
-You can setup SSL certificates for this if you want it to be time-consuming to maintain.
-Or you can directly use an encryption algorithm, such as AES.  Setting up an SSH tunnel is another
-good alternative, if you control both systems.  I think it's easier to configure encryption keys
-as part of your application, rather than having to mess with each individual system, but that's me.
+You can setup SSL certificates for this but there's a good amount of maintenance overhead there.
+Or, you can directly use an encryption algorithm, such as AES.  Setting up an SSH tunnel is another
+alternative, if you control both systems.  I think it's easier to configure encryption as part of
+your application, rather than having to mess with each individual system, but that's me.
 
 For more information on how SSL/AES/RC4/TLS all interact,
 [read this article on SSL and AES](http://luxsci.com/blog/256-bit-aes-encryption-for-ssl-and-tls-maximal-security.html)
