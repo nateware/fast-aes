@@ -1,7 +1,7 @@
 = FastAES - Simple but LOW security AES gem
 
-**This gem is a relic from 5 years ago, when libraries such as OpenSSL did not work correctly with Ruby.**
-**Use in new projects is strongly discouraged. The core Ruby OpenSSL library is faster and more secure.**
+*This gem is a relic from 5 years ago, when libraries such as OpenSSL did not work correctly with Ruby.*
+*Use in new projects is strongly discouraged. The core Ruby OpenSSL library is faster and more secure.*
 
 == Replacement Code
 
